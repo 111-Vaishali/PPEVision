@@ -11,6 +11,7 @@ VIOLATION_CLASSES = {
     "no_goggle",
     "no_gloves",
     "no_boots",
+    "none",
 }
 
 

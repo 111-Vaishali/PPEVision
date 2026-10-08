@@ -12,6 +12,25 @@ import {
 
 const API_URL = "http://127.0.0.1:8000"
 
+const SAMPLE_IMAGES = [
+  {
+    name: "Sample 1",
+    path: "/samples/image122.jpeg",
+  },
+  {
+    name: "Sample 2",
+    path: "/samples/image182.jpg",
+  },
+  {
+    name: "Sample 3",
+    path: "/samples/image612.jpg",
+  },
+  {
+    name: "Sample 4",
+    path: "/samples/image1133.jpg",
+  },
+]
+
 export default function Analyzer() {
   const [file, setFile] = useState(null)
   const [image, setImage] = useState(null)
@@ -19,7 +38,7 @@ export default function Analyzer() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const handleImage = (event) => {
+    const handleImage = (event) => {
     const selectedFile = event.target.files[0]
 
     if (!selectedFile) return
@@ -29,6 +48,43 @@ export default function Analyzer() {
     setResult(null)
     setError("")
   }
+
+
+  const handleSampleImage = async (sample) => {
+  try {
+    setError("")
+    setResult(null)
+
+    const response = await fetch(sample.path)
+
+    if (!response.ok) {
+      throw new Error("Could not load sample image")
+    }
+
+    const blob = await response.blob()
+
+    // Get the real extension from the sample path
+    const extension = sample.path.split(".").pop()
+
+    const sampleFile = new File(
+      [blob],
+      `${sample.name}.${extension}`,
+      {
+        type: blob.type,
+      }
+    )
+
+    setFile(sampleFile)
+    setImage(sample.path)
+
+  } catch (err) {
+    console.error(err)
+
+    setError(
+      "Could not load the selected sample image."
+    )
+  }
+}
 
   const analyzeImage = async () => {
     if (!file) return
@@ -95,44 +151,108 @@ export default function Analyzer() {
       </div>
 
 
-      {/* UPLOAD */}
+      {/* UPLOAD + SAMPLE IMAGES */}
 
-      {!image && (
+{!image && (
 
-        <div className="rounded-2xl border bg-white p-6 shadow-sm">
+  <div className="space-y-6">
 
-          <label className="flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/40 transition hover:bg-blue-50">
+    {/* UPLOAD */}
 
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+    <div className="rounded-2xl border bg-white p-6 shadow-sm">
 
-              <Upload size={28} />
+      <label className="flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-blue-200 bg-blue-50/40 transition hover:bg-blue-50">
 
-            </div>
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600">
 
-            <h2 className="font-semibold text-slate-800">
-              Drop an image here
-            </h2>
-
-            <p className="mt-2 text-sm text-slate-400">
-              or click to choose an image
-            </p>
-
-            <p className="mt-3 text-xs text-slate-400">
-              JPG, PNG • Maximum 10MB
-            </p>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImage}
-              className="hidden"
-            />
-
-          </label>
+          <Upload size={28} />
 
         </div>
 
-      )}
+        <h2 className="font-semibold text-slate-800">
+          Drop an image here
+        </h2>
+
+        <p className="mt-2 text-sm text-slate-400">
+          or click to choose an image
+        </p>
+
+        <p className="mt-3 text-xs text-slate-400">
+          JPG, PNG • Maximum 10MB
+        </p>
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImage}
+          className="hidden"
+        />
+
+      </label>
+
+    </div>
+
+
+    {/* SAMPLE IMAGES */}
+
+    <div className="rounded-2xl border bg-white p-6 shadow-sm">
+
+      <div className="mb-4">
+
+        <h2 className="font-semibold text-slate-800">
+          Try Sample Images
+        </h2>
+
+        <p className="mt-1 text-sm text-slate-400">
+          Select a sample image to test the YOLO11s PPE detection system
+        </p>
+
+      </div>
+
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+
+        {SAMPLE_IMAGES.map((sample) => (
+
+          <button
+            key={sample.path}
+            onClick={() => handleSampleImage(sample)}
+            className="group overflow-hidden rounded-xl border bg-slate-50 text-left transition hover:border-blue-400 hover:shadow-md"
+          >
+
+            <div className="aspect-video overflow-hidden bg-slate-100">
+
+              <img
+                src={sample.path}
+                alt={sample.name}
+                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+              />
+
+            </div>
+
+            <div className="p-3">
+
+              <p className="text-sm font-semibold text-slate-700">
+                {sample.name}
+              </p>
+
+              <p className="mt-1 text-xs text-blue-500">
+                Click to analyze
+              </p>
+
+            </div>
+
+          </button>
+
+        ))}
+
+      </div>
+
+    </div>
+
+  </div>
+
+)}
 
 
       {/* IMAGE + RESULTS */}
@@ -547,7 +667,8 @@ function DetectionBox({
 
 
   const isViolation =
-    detection.class.startsWith("no_")
+    detection.class.startsWith("no_") ||
+    detection.class === "none"
 
 
   const color = isViolation
@@ -600,7 +721,8 @@ function DetectionRow({
 }) {
 
   const isViolation =
-    detection.class.startsWith("no_")
+    detection.class.startsWith("no_") ||
+    detection.class === "none"
 
 
   return (
