@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 
 
-MODEL_PATH = "../runs/detect/runs/worker_safety-2/weights/best.pt"
+MODEL_PATH = "models/best.pt"
 
 model = YOLO(MODEL_PATH)
 
