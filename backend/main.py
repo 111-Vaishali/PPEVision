@@ -47,6 +47,7 @@ def health():
 
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
+    print("ANALYZE ENDPOINT HIT", flush=True)
 
     file_extension = os.path.splitext(file.filename)[1]
 
