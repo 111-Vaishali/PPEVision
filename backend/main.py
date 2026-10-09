@@ -41,6 +41,10 @@ def root():
     }
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
 
