@@ -32,3 +32,10 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+
+
+# PPEVision generated files
+backend/outputs/
+backend/uploads/
+analyze-result.txt
